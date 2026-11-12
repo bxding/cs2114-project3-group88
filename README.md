@@ -244,8 +244,21 @@ We will compare this table to what actually changed in Deliverable 4.
 
 ### GenAI note
 
-Tools: ChatGPT and Claude.
+Tools: ChatGPT and Claude. The team checked everything below before keeping it. Anything not listed here was done without GenAI.
 
-- **Design (Deliverable 2):** ChatGPT suggested random personal codes. Claude simplified them to `java.util.Random` with a check against the current line, and suggested `removeFirst(T target)` instead of a `Predicate`. Full details are in our spec's GenAI note.
-- **This deliverable:** we gave Claude our repo, our spec, and the Deliverable 3 rubric. Claude ran our tests and the console app, compared the code to the spec, and drafted the Reflection, Next Steps, and Attribution sections. We checked every claim against the code and edited the drafts.
-- **Code:** Claude drafted the first version of `LayerLineControllerTest` from our spec section 7.4 scenarios; Ajeet reviewed every assertion against the spec and ran the suite. We wrote all other Java code and tests ourselves.
+**ChatGPT (Deliverable 2, design)**
+- We asked how to give each person in line a random personal code that never repeats. It suggested `SecureRandom` plus a `Set` of every code already given out. Ajeet brought this to the team. Claude later simplified it (next section).
+
+**Claude (Deliverable 2, design)**
+- We pasted in parts of our draft spec and asked whether `SecureRandom` plus a `Set` was more than this project needs. It suggested `java.util.Random` with a check against the people currently in line. Brian updated the model fields to match. This became `LayerLineModel.makeCode()`.
+- We asked whether any of our method signatures used things not covered in class. It pointed out `removeFirst(Predicate)` and suggested `removeFirst(T target)`. That is the signature in `LinkedQueue`.
+
+**Claude (Deliverable 3, this prototype)**
+- **`LayerLineControllerTest` (13 tests):** Claude wrote the first version from our spec section 7.4 scenarios. The tests feed scripted input through `new Scanner(String)` and capture `System.out`, so no main code had to change. They cover: null constructor arguments, the join/status/next/cancel workflow, bad minutes (`abc`, blank, `1.5`, `0`, `241`, a huge number), duplicate names in different casing, a wrong cancel code and `next` on an empty line, a full line (40), control-character and over-20-character names, blank names re-prompting only the name, `quit` typed as a name, cancelling from the head/middle/tail, unknown commands and mixed-case commands, and end of input at the command, join and cancel prompts. Ajeet checked every assertion against spec 7.4 and ran the suite (47 of 47 pass).
+- **README run instructions:** Claude corrected the commands for running the model tests (`mvn test` and Eclipse) and the console app, and the test counts.
+- **README Reflection:** Claude wrote the first draft of the eight "What changed from the spec" items, the spec changes table (A to E), "Did the model really stand alone?", the unknowns table, and "What doesn't work yet", working from our code, spec and scope. While drafting it, it caught and fixed one wrong claim of its own (it first said the web view did not escape names; it does).
+- **README Next Steps:** Claude wrote the first draft of the MVP to-do list, the "Reprint at the front" change feature (the feature itself comes from our scope), the table predicting which classes and methods will and will not change, the stretch goal decisions, the new test list, and the owner table.
+- **README Attribution:** Claude wrote the first draft of this table from our git history and the spec's division of work. Each teammate checked their own rows.
+- **Cleanup:** Claude removed leftover team notes from the README and fixed a wrong item number in the stretch goals table ("MVP item 3" to "MVP item 2").
+
+**Not GenAI:** all main Java code (`LinkedQueue`, `LayerLineModel`, `PrintRequest`, `JoinResult`, `StatusEntry`, `JoinOutcome`, `ConsoleView`, `LayerLineController`, `LayerLineApp`, `LayerLineWebApp`), `LinkedQueueTest`, `LayerLineModelTest`, the Maven build, and the Docker files.
