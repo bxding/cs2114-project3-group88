@@ -190,7 +190,7 @@ We will compare this table to what actually changed in Deliverable 4.
 | Stretch goal | Decision |
 |---|---|
 | Reprint at the front | **Committed**, as our change feature. |
-| GUI board | **Committed**, as cleanup only. The web UI already exists. We will route it through a controller (MVP item 3). |
+| GUI board | **Committed**, as cleanup only. The web UI already exists. We will route it through a controller (MVP item 2). |
 | Separate PLA and resin lines | **Dropped.** It would need a second queue and a routing rule, and we do not have time with the reprint feature. |
 | Save and load | **Dropped.** File I/O adds error cases we cannot fully test this round. |
 
@@ -225,8 +225,6 @@ We will compare this table to what actually changed in Deliverable 4.
 
 ## Attribution
 
-<!-- TEAM: confirm every row matches what really happened before submitting. -->
-
 | Class / test file | Layer | Who worked on it and how |
 |---|---|---|
 | `LinkedQueue.java` | Model | Brian wrote it. Karthik integrated it. Ajeet reviewed the `removeFirst` pointer cases. |
@@ -250,4 +248,4 @@ Tools: ChatGPT and Claude.
 
 - **Design (Deliverable 2):** ChatGPT suggested random personal codes. Claude simplified them to `java.util.Random` with a check against the current line, and suggested `removeFirst(T target)` instead of a `Predicate`. Full details are in our spec's GenAI note.
 - **This deliverable:** we gave Claude our repo, our spec, and the Deliverable 3 rubric. Claude ran our tests and the console app, compared the code to the spec, and drafted the Reflection, Next Steps, and Attribution sections. We checked every claim against the code and edited the drafts.
-- **Code:** <!-- TEAM: state honestly whether GenAI helped write any class or test. If not, keep this line: --> Claude drafted the first version of `LayerLineControllerTest` from our spec section 7.4 scenarios; Ajeet reviewed every assertion against the spec and ran the suite. We wrote all other Java code and tests ourselves.
+- **Code:** Claude drafted the first version of `LayerLineControllerTest` from our spec section 7.4 scenarios; Ajeet reviewed every assertion against the spec and ran the suite. We wrote all other Java code and tests ourselves.
