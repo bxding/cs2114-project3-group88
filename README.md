@@ -39,5 +39,4 @@ docker compose up --build -d
 Open http://127.0.0.1:8080. Compose binds the published port to localhost;
 change the host side of `ports` in `compose.yaml` to use another port. No reverse
 proxy is included. Stop with `docker compose down`. Queue data is held in memory
-and is lost when the application restarts. GitHub Actions runs tests and builds
-the image on pushes and pull requests.
+and is lost when the application restarts.
