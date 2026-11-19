@@ -142,7 +142,8 @@ public class LayerLineController {
             refreshStatus();
         } else {
             view.showMessage("Reprint not allowed. Only a student who was already called can reprint, "
-                    + "once per code, and only if the line is not full.");
+                    + "once per code, only if the line is not full, "
+                    + "and only if the same name is not already waiting.");
         }
     }
 

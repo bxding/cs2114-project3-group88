@@ -61,7 +61,8 @@ public class WebController {
             return "Reprint accepted. You are now at place 1.";
         }
         return "Reprint not allowed. Only a student who was already called can reprint, "
-                + "once per code, and only if the line is not full.";
+                + "once per code, only if the line is not full, "
+                + "and only if the same name is not already waiting.";
     }
 
     /** Fresh copy of the line for the page; holds no codes. */
