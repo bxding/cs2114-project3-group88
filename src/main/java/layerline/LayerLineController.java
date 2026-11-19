@@ -17,7 +17,7 @@ public class LayerLineController {
     public void run() {
         view.showMessage("Layer Line - 3D print queue");
         while (true) {
-            String raw = view.prompt("Command (join/status/next/cancel/quit): ");
+            String raw = view.prompt("Command (join/status/next/cancel/reprint/quit): ");
             if (raw == null) {
                 return; // EOF
             }
@@ -35,11 +35,14 @@ public class LayerLineController {
                 case "cancel":
                     handleCancel();
                     break;
+                case "reprint":
+                    handleReprint();
+                    break;
                 case "quit":
                     view.showMessage("Goodbye. Pending requests are not saved.");
                     return;
                 default:
-                    view.showMessage("Unknown command. Valid choices: join, status, next, cancel, quit.");
+                    view.showMessage("Unknown command. Valid choices: join, status, next, cancel, reprint, quit.");
             }
         }
     }
@@ -65,7 +68,7 @@ public class LayerLineController {
                     case ADDED:
                         view.showMessage("Added at place " + result.getPosition()
                                 + ". Your personal code is " + result.getPersonalCode()
-                                + " - save it, it is shown only once and is needed to cancel.");
+                                + " - save it, it is shown only once and is needed to cancel or reprint.");
                         refreshStatus();
                         break;
                     case ALREADY_WAITING:
@@ -126,6 +129,20 @@ public class LayerLineController {
             refreshStatus();
         } else {
             view.showMessage("Code not found");
+        }
+    }
+
+    private void handleReprint() {
+        String code = view.prompt("Personal code: ");
+        if (code == null) {
+            return;
+        }
+        if (model.reprint(code)) {
+            view.showMessage("Reprint accepted. You are now at place 1.");
+            refreshStatus();
+        } else {
+            view.showMessage("Reprint not allowed. Only a student who was already called can reprint, "
+                    + "once per code, and only if the line is not full.");
         }
     }
 

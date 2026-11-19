@@ -200,7 +200,7 @@ class LayerLineControllerTest {
     void badCommandsListChoicesAndStatusIgnoresCase() {
         LayerLineModel model = new LayerLineModel();
         String out = run(model, "jion", "", "STATUS", "quit");
-        int unknown = out.split("Valid choices: join, status, next, cancel, quit.", -1).length - 1;
+        int unknown = out.split("Valid choices: join, status, next, cancel, reprint, quit.", -1).length - 1;
         assertEquals(2, unknown);
         assertTrue(out.contains("Line is empty"));
         assertTrue(model.getStatus().isEmpty());
@@ -222,6 +222,35 @@ class LayerLineControllerTest {
         assertDoesNotThrow(() -> run(model, "join", "Sam"));
         assertDoesNotThrow(() -> run(model, "join", "Sam", "abc"));
         assertDoesNotThrow(() -> run(model, "cancel"));
+        assertTrue(model.getStatus().isEmpty());
+    }
+
+    @Test
+    void reprintGoodCodeMovesStudentFirst() {
+        LayerLineModel model = new LayerLineModel();
+        String out = run(model, "join", "Sam", "30", "join", "Lee", "45", "next", "quit");
+        String sam = codesIn(out).get(0);
+        out = run(model, "reprint", sam, "quit");
+        assertTrue(out.contains("Reprint accepted. You are now at place 1."));
+        assertEquals("1:Sam 2:Lee", names(model));
+        assertFalse(out.contains(sam)); // the code is never printed back
+    }
+
+    @Test
+    void reprintBadCodeAndCaseInsensitiveCommand() {
+        LayerLineModel model = new LayerLineModel();
+        String out = run(model, "join", "Sam", "30", "quit");
+        String sam = codesIn(out).get(0);
+        out = run(model, "REPRINT", sam, "reprint", "ZZZZZZ", "reprint", "", "quit");
+        int refused = out.split("Reprint not allowed", -1).length - 1;
+        assertEquals(3, refused);
+        assertEquals("1:Sam", names(model));
+    }
+
+    @Test
+    void eofAtReprintPromptExitsCleanly() {
+        LayerLineModel model = new LayerLineModel();
+        assertDoesNotThrow(() -> run(model, "reprint"));
         assertTrue(model.getStatus().isEmpty());
     }
 }
