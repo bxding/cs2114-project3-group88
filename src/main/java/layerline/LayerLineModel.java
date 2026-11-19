@@ -14,10 +14,16 @@ public class LayerLineModel {
     static final int CODE_LENGTH = 6;
 
     private final LinkedQueue<PrintRequest> line;
+    /** Called with next and still allowed one reprint. */
+    private final LinkedQueue<PrintRequest> served;
+    /** Back in line after a reprint; not added to served again when called. */
+    private final LinkedQueue<PrintRequest> reprinted;
     private final Random random;
 
     public LayerLineModel() {
         this.line = new LinkedQueue<>();
+        this.served = new LinkedQueue<>();
+        this.reprinted = new LinkedQueue<>();
         this.random = new Random();
     }
 
@@ -52,7 +58,7 @@ public class LayerLineModel {
             return new JoinResult(JoinOutcome.FULL, -1, null);
         }
 
-        String code = makeCode(current);
+        String code = makeCode();
         line.enqueue(new PrintRequest(cleaned, minutes, code));
         return new JoinResult(JoinOutcome.ADDED, line.size(), code);
     }
@@ -63,7 +69,37 @@ public class LayerLineModel {
         if (head == null) {
             return null;
         }
+        if (reprinted.removeFirst(head) == null) {
+            served.enqueue(head); // first time called: one reprint allowed
+        }
         return new StatusEntry(1, head.getDisplayName(), head.getMinutes());
+    }
+
+    /**
+     * Puts a student who was already called back at place 1, once per code.
+     *
+     * @return true if they are now first; false for a blank or unknown code, a
+     *         code still waiting or already reprinted, a full line, or a name
+     *         that is already waiting
+     * @throws IllegalArgumentException if code is null
+     */
+    public boolean reprint(String personalCode) {
+        if (personalCode == null) {
+            throw new IllegalArgumentException("Code must not be null.");
+        }
+        String code = personalCode.trim().toUpperCase();
+        if (code.isEmpty()) {
+            return false;
+        }
+        PrintRequest request = findByCode(served, code);
+        if (request == null || line.size() >= MAX_WAITING
+                || findByName(request.getNormalizedName()) != null) {
+            return false;
+        }
+        served.removeFirst(request);
+        reprinted.enqueue(request);
+        line.enqueueFront(request);
+        return true;
     }
 
     /**
@@ -80,13 +116,13 @@ public class LayerLineModel {
         if (code.isEmpty()) {
             return false;
         }
-        for (PrintRequest request : line.snapshot()) {
-            if (request.getPersonalCode().equals(code)) {
-                line.removeFirst(request);
-                return true;
-            }
+        PrintRequest request = findByCode(line, code);
+        if (request == null) {
+            return false;
         }
-        return false;
+        line.removeFirst(request);
+        reprinted.removeFirst(request);
+        return true;
     }
 
     /** New list in line order, places starting at 1, no codes. */
@@ -113,23 +149,35 @@ public class LayerLineModel {
         return sb.toString().trim();
     }
 
-    private String makeCode(List<PrintRequest> current) {
+    /** Random code not used by anyone waiting or anyone who can still reprint. */
+    private String makeCode() {
         while (true) {
             StringBuilder sb = new StringBuilder(CODE_LENGTH);
             for (int i = 0; i < CODE_LENGTH; i++) {
                 sb.append((char) ('A' + random.nextInt(26)));
             }
             String candidate = sb.toString();
-            boolean taken = false;
-            for (PrintRequest request : current) {
-                if (request.getPersonalCode().equals(candidate)) {
-                    taken = true;
-                    break;
-                }
-            }
-            if (!taken) {
+            if (findByCode(line, candidate) == null && findByCode(served, candidate) == null) {
                 return candidate;
             }
         }
+    }
+
+    private static PrintRequest findByCode(LinkedQueue<PrintRequest> queue, String code) {
+        for (PrintRequest request : queue.snapshot()) {
+            if (request.getPersonalCode().equals(code)) {
+                return request;
+            }
+        }
+        return null;
+    }
+
+    private PrintRequest findByName(String normalizedName) {
+        for (PrintRequest request : line.snapshot()) {
+            if (request.getNormalizedName().equals(normalizedName)) {
+                return request;
+            }
+        }
+        return null;
     }
 }

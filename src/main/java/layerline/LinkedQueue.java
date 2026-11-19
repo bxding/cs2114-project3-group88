@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MODEL: singly linked FIFO queue. enqueue/dequeue are O(1); removeFirst and
- * snapshot are O(n). Node is private and never leaves this class.
+ * MODEL: singly linked FIFO queue. enqueue/enqueueFront/dequeue are O(1);
+ * removeFirst and snapshot are O(n). Node is private and never leaves this class.
  */
 public class LinkedQueue<T> {
 
@@ -40,6 +40,20 @@ public class LinkedQueue<T> {
             tail.next = node;
         }
         tail = node;
+        size++;
+    }
+
+    /** Puts a non-null value at the head (place 1) in O(1). */
+    public void enqueueFront(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Queue does not accept null entries.");
+        }
+        Node<T> node = new Node<>(value);
+        node.next = head;
+        head = node;
+        if (tail == null) {
+            tail = node;
+        }
         size++;
     }
 

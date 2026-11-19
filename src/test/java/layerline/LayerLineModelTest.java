@@ -203,4 +203,103 @@ class LayerLineModelTest {
         assertNull(dup.getPersonalCode());
         assertNotNull(code);
     }
+
+    @Test
+    void reprintPutsCalledStudentFirst() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.join("Bo", 20);
+        assertEquals("Alex", m.callNext().getName());
+        assertTrue(m.reprint(a));
+        List<StatusEntry> s = m.getStatus();
+        assertEquals(2, s.size());
+        assertEquals("Alex", s.get(0).getName());
+        assertEquals(1, s.get(0).getPosition());
+        assertEquals(30, s.get(0).getEstimatedMinutes());
+        assertEquals("Bo", s.get(1).getName());
+        assertEquals("Alex", m.callNext().getName());
+    }
+
+    @Test
+    void reprintAcceptsLowerCaseAndSpaces() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.callNext();
+        assertTrue(m.reprint("  " + a.toLowerCase() + " "));
+        assertEquals("Alex", m.getStatus().get(0).getName());
+    }
+
+    @Test
+    void reprintOnlyOncePerCode() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.callNext();
+        assertTrue(m.reprint(a));
+        assertFalse(m.reprint(a)); // already back in line
+        m.callNext();
+        assertFalse(m.reprint(a)); // called again, but the reprint is used up
+        assertTrue(m.getStatus().isEmpty());
+    }
+
+    @Test
+    void reprintBadCodes() {
+        LayerLineModel m = new LayerLineModel();
+        String waiting = m.join("Alex", 30).getPersonalCode();
+        assertFalse(m.reprint(waiting)); // still waiting, never called
+        assertFalse(m.reprint(""));
+        assertFalse(m.reprint("   "));
+        assertFalse(m.reprint("ZZZZZZ"));
+        assertFalse(m.reprint("not a code at all!"));
+        assertThrows(IllegalArgumentException.class, () -> m.reprint(null));
+        assertEquals(1, m.getStatus().size());
+        assertEquals("Alex", m.getStatus().get(0).getName());
+    }
+
+    @Test
+    void reprintRejectedWhenLineFull() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.callNext();
+        for (int i = 0; i < LayerLineModel.MAX_WAITING; i++) {
+            m.join("P" + i, 10);
+        }
+        assertFalse(m.reprint(a));
+        assertEquals(LayerLineModel.MAX_WAITING, m.getStatus().size());
+        m.callNext();
+        assertTrue(m.reprint(a)); // still allowed once there is room
+        assertEquals("Alex", m.getStatus().get(0).getName());
+    }
+
+    @Test
+    void reprintRejectedWhenSameNameAlreadyWaiting() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.callNext();
+        m.join("ALEX", 15); // joined again the normal way
+        assertFalse(m.reprint(a));
+        assertEquals(1, m.getStatus().size());
+    }
+
+    @Test
+    void cancelAfterReprintRemovesStudent() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.join("Bo", 20);
+        m.callNext();
+        assertTrue(m.reprint(a));
+        assertTrue(m.cancel(a));
+        assertEquals(1, m.getStatus().size());
+        assertEquals("Bo", m.getStatus().get(0).getName());
+        assertFalse(m.reprint(a));
+    }
+
+    @Test
+    void callNextOnEmptyThenReprintStillWorks() {
+        LayerLineModel m = new LayerLineModel();
+        String a = m.join("Alex", 30).getPersonalCode();
+        m.callNext();
+        assertNull(m.callNext());
+        assertTrue(m.reprint(a));
+        assertEquals("Alex", m.callNext().getName());
+    }
 }

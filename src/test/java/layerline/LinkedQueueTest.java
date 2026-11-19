@@ -161,4 +161,67 @@ class LinkedQueueTest {
         copy.add("C");
         assertEquals(2, q.size());
     }
+
+    @Test
+    void enqueueFrontOnEmptySetsHeadAndTail() {
+        LinkedQueue<String> q = new LinkedQueue<>();
+        q.enqueueFront("A");
+        assertEquals(1, q.size());
+        assertEquals("A", q.peek());
+        q.enqueue("B"); // tail must be A, so B goes behind it
+        assertEquals(List.of("A", "B"), q.snapshot());
+    }
+
+    @Test
+    void enqueueFrontPutsValueFirst() {
+        LinkedQueue<String> q = new LinkedQueue<>();
+        q.enqueue("A");
+        q.enqueue("B");
+        q.enqueueFront("C");
+        assertEquals(List.of("C", "A", "B"), q.snapshot());
+        assertEquals(3, q.size());
+        assertEquals("C", q.dequeue());
+    }
+
+    @Test
+    void enqueueFrontNullThrowsAndLeavesQueueUnchanged() {
+        LinkedQueue<String> q = new LinkedQueue<>();
+        q.enqueue("A");
+        assertThrows(IllegalArgumentException.class, () -> q.enqueueFront(null));
+        assertEquals(List.of("A"), q.snapshot());
+        assertEquals(1, q.size());
+    }
+
+    @Test
+    void orderAfterInterleavedEnqueuesAndDequeues() {
+        LinkedQueue<String> q = new LinkedQueue<>();
+        q.enqueue("A");
+        q.enqueue("B");
+        assertEquals("A", q.dequeue());
+        q.enqueue("C");
+        assertEquals("B", q.dequeue());
+        q.enqueue("D");
+        q.enqueue("E");
+        assertEquals("C", q.dequeue());
+        assertEquals(List.of("D", "E"), q.snapshot());
+        assertEquals("D", q.dequeue());
+        assertEquals("E", q.dequeue());
+        assertNull(q.dequeue());
+        q.enqueue("F"); // tail was reset, so the queue still works
+        assertEquals(List.of("F"), q.snapshot());
+    }
+
+    @Test
+    void interleavedWithEnqueueFrontAndRemoveTail() {
+        LinkedQueue<String> q = new LinkedQueue<>();
+        q.enqueue("A");
+        q.enqueueFront("B");
+        q.enqueue("C");
+        assertEquals(List.of("B", "A", "C"), q.snapshot());
+        assertEquals("C", q.removeFirst("C"));
+        q.enqueue("D"); // tail moved back to A
+        assertEquals(List.of("B", "A", "D"), q.snapshot());
+        assertEquals("B", q.dequeue());
+        assertEquals("A", q.peek());
+    }
 }
