@@ -250,4 +250,13 @@ Tools: ChatGPT and Claude. The team checked everything below before keeping it. 
 - Claude also improved the structure of the readme and code for better readability.
 - **Cleanup:** Claude removed leftover team notes from the README and fixed a wrong item number in the stretch goals table ("MVP item 3" to "MVP item 2").
 
-**Not GenAI:** all main Java code (`LinkedQueue`, `LayerLineModel`, `PrintRequest`, `JoinResult`, `StatusEntry`, `JoinOutcome`, `ConsoleView`, `LayerLineController`, `LayerLineApp`, `LayerLineWebApp`), `LinkedQueueTest`, `LayerLineModelTest`, the Maven build, and the Docker files.
+**Claude (Deliverable 4, second prototype)**
+- **`LinkedQueue.enqueueFront`:** Claude wrote it from our D3 prediction (O(1), sets `tail` when the queue was empty, rejects `null`).
+- **`LayerLineModel` reprint feature:** Claude wrote `reprint(String)`, the `served` and `reprinted` queues, the change to `callNext()` that records who was called, the change to `cancel()` that clears the reprint marker, the change to `makeCode()` so codes stay unique against students who can still reprint, and the `findByCode` / `findByName` helpers. The rules (called before, once per code, line not full, same name not already waiting, trim and uppercase the code) came from our D3 Next Steps.
+- **`LayerLineController`:** Claude wrote the `reprint` case in `run()`, `handleReprint()`, and the updated command prompt, unknown-command and join messages.
+- **`WebController` and `LayerLineWebApp`:** Claude moved the web app's join, next, cancel and number-parsing logic out of `LayerLineWebApp` into a new `WebController`, added a `reprint` action, and added the reprint form to the page.
+- **Tests:** Claude wrote the 3 `enqueueFront` tests and 2 interleaved enqueue/dequeue order tests in `LinkedQueueTest`, the 8 reprint tests in `LayerLineModelTest`, the 3 reprint tests in `LayerLineControllerTest`, all of `ConsoleViewTest` (6 tests), and all of `WebControllerTest` (5 tests), and ran the full suite (74 of 74 pass).
+- **README:** Claude drafted the Deliverable 4 run instructions, Reflection, Next Steps (including the timed demo) and Attribution updates.
+- **What we did:** Ajeet asked Claude to build the feature exactly as our D3 Next Steps described it and pushed the result. Each owner in the Attribution table is responsible for reading, running and defending their part.
+
+**Not GenAI:** the Deliverable 2 and 3 main Java code (`LinkedQueue`, `LayerLineModel`, `PrintRequest`, `JoinResult`, `StatusEntry`, `JoinOutcome`, `ConsoleView`, `LayerLineController`, `LayerLineApp`, `LayerLineWebApp`), the Deliverable 3 versions of `LinkedQueueTest` and `LayerLineModelTest`, the Maven build, and the Docker files. The Deliverable 4 additions to these files are listed above.
