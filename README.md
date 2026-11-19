@@ -225,12 +225,12 @@ Console app, one person typing, one person talking.
 | `LayerLineController.java` | Controller | Ajeet wrote it, including `readMinutes` and the command handlers. Karthik revised and integrated it. D4: Ajeet wrote `handleReprint` and the `reprint` case. |
 | `WebController.java` | Controller | New in D4. Karthik wrote it by moving the web app's logic out of `LayerLineWebApp`. |
 | `LayerLineApp.java` | Controller | Ajeet wrote it. Karthik integrated it. Unchanged in D4. |
-| `LinkedQueueTest.java` | Test | Brian wrote it. Karthik reviewed it against spec 7.1. D4: Brian wrote the 3 `enqueueFront` tests and the 2 interleaved order tests; Claude refined the interleaved order tests. |
+| `LinkedQueueTest.java` | Test | Brian wrote it. Karthik reviewed it against spec 7.1. D4: Brian wrote the 3 `enqueueFront` tests and the 2 interleaved order tests. |
 | `LayerLineModelTest.java` | Test | Brian and Karthik wrote it. Ajeet reviewed it against spec 7.2 and 7.3. D4: Brian wrote the 8 reprint tests; Claude refined them. |
-| `LayerLineControllerTest.java` | Test | GenAI-assisted: Claude drafted the first version from spec 7.4; Ajeet checked each scenario against the spec and ran it. D4: Ajeet wrote the 3 reprint tests. |
+| `LayerLineControllerTest.java` | Test | GenAI-assisted: Ajeet drafted the first version from spec 7.4; Claude checked each scenario against the spec and ran it. D4: Ajeet wrote the 3 reprint tests. |
 | `ConsoleViewTest.java` | Test | New in D4. Karthik wrote it from spec section 8. |
 | `WebControllerTest.java` | Test | New in D4. Karthik wrote it. |
-| `README.md` | Docs | Karthik wrote the run instructions. Brian added the web and Docker sections. D3 Reflection, Next Steps and Attribution were GenAI-assisted (Claude drafted them); Ajeet edited them and the team reviewed them. The team wrote the D4 run instructions, Reflection, Next Steps and Attribution. |
+| `README.md` | Docs | Karthik wrote the run instructions. Brian added the web and Docker sections. Ajeet added the Next Steps and Attribution. D3 Reflection along with ReadMe structuring were GenAI-assisted (Claude drafted them); Ajeet edited them and the team reviewed them. The team wrote the D4 run instructions, Reflection, Next Steps and Attribution. |
 
 ### GenAI note
 
