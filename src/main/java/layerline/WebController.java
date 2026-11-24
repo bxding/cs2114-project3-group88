@@ -23,22 +23,10 @@ public class WebController {
         try {
             minutes = Integer.parseInt(minutesText == null ? "" : minutesText.trim());
         } catch (NumberFormatException e) {
-            return "Enter a whole number from 1 to 240.";
+            return Messages.BAD_MINUTES;
         }
         try {
-            JoinResult result = model.join(name, minutes);
-            switch (result.getOutcome()) {
-                case ADDED:
-                    return "Added at place " + result.getPosition() + ". Your personal code is "
-                            + result.getPersonalCode()
-                            + ". Save it; it is shown only once and is needed to cancel or reprint.";
-                case ALREADY_WAITING:
-                    return "Already waiting at place " + result.getPosition() + ".";
-                case FULL:
-                    return "Line full (40 maximum).";
-                default:
-                    return "";
-            }
+            return Messages.join(model.join(name, minutes));
         } catch (IllegalArgumentException e) {
             return e.getMessage();
         }
@@ -47,22 +35,17 @@ public class WebController {
     public String next() {
         StatusEntry called = model.callNext();
         if (called == null) {
-            return "Line is empty.";
+            return Messages.LINE_EMPTY;
         }
-        return "Now called: " + called.getName() + " (" + called.getEstimatedMinutes() + " min).";
+        return Messages.called(called);
     }
 
     public String cancel(String code) {
-        return model.cancel(code == null ? "" : code) ? "Request cancelled." : "Code not found.";
+        return model.cancel(code == null ? "" : code) ? Messages.CANCELLED : Messages.CODE_NOT_FOUND;
     }
 
     public String reprint(String code) {
-        if (model.reprint(code == null ? "" : code)) {
-            return "Reprint accepted. You are now at place 1.";
-        }
-        return "Reprint not allowed. Only a student who was already called can reprint, "
-                + "once per code, only if the line is not full, "
-                + "and only if the same name is not already waiting.";
+        return Messages.reprint(model.reprint(code == null ? "" : code));
     }
 
     /** Fresh copy of the line for the page; holds no codes. */

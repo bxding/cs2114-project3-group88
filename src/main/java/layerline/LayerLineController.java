@@ -64,21 +64,9 @@ public class LayerLineController {
             }
             try {
                 JoinResult result = model.join(name, minutes);
-                switch (result.getOutcome()) {
-                    case ADDED:
-                        view.showMessage("Added at place " + result.getPosition()
-                                + ". Your personal code is " + result.getPersonalCode()
-                                + " - save it, it is shown only once and is needed to cancel or reprint.");
-                        refreshStatus();
-                        break;
-                    case ALREADY_WAITING:
-                        view.showMessage("Already waiting at place " + result.getPosition() + ".");
-                        break;
-                    case FULL:
-                        view.showMessage("Line full (40 maximum).");
-                        break;
-                    default:
-                        break;
+                view.showMessage(Messages.join(result));
+                if (result.getOutcome() == JoinOutcome.ADDED) {
+                    refreshStatus();
                 }
                 return;
             } catch (IllegalArgumentException e) {
@@ -101,7 +89,7 @@ public class LayerLineController {
             } catch (NumberFormatException e) {
                 // fall through to message
             }
-            view.showMessage("Enter a whole number from 1 to 240");
+            view.showMessage(Messages.BAD_MINUTES);
         }
     }
 
@@ -112,10 +100,10 @@ public class LayerLineController {
     private void handleNext() {
         StatusEntry called = model.callNext();
         if (called == null) {
-            view.showMessage("Line is empty");
+            view.showMessage(Messages.LINE_EMPTY);
             return;
         }
-        view.showMessage("Now called: " + called.getName() + " (" + called.getEstimatedMinutes() + " min)");
+        view.showMessage(Messages.called(called));
         refreshStatus();
     }
 
@@ -125,10 +113,10 @@ public class LayerLineController {
             return;
         }
         if (model.cancel(code)) {
-            view.showMessage("Request cancelled.");
+            view.showMessage(Messages.CANCELLED);
             refreshStatus();
         } else {
-            view.showMessage("Code not found");
+            view.showMessage(Messages.CODE_NOT_FOUND);
         }
     }
 
@@ -137,13 +125,10 @@ public class LayerLineController {
         if (code == null) {
             return;
         }
-        if (model.reprint(code)) {
-            view.showMessage("Reprint accepted. You are now at place 1.");
+        ReprintOutcome outcome = model.reprint(code);
+        view.showMessage(Messages.reprint(outcome));
+        if (outcome == ReprintOutcome.ACCEPTED) {
             refreshStatus();
-        } else {
-            view.showMessage("Reprint not allowed. Only a student who was already called can reprint, "
-                    + "once per code, only if the line is not full, "
-                    + "and only if the same name is not already waiting.");
         }
     }
 

@@ -65,4 +65,18 @@ class WebControllerTest {
         assertTrue(c.reprint(null).startsWith("Reprint not allowed"));
         assertEquals("Line is empty.", c.next());
     }
+
+    @Test
+    void reprintRefusalSaysWhy() {
+        LayerLineModel model = new LayerLineModel();
+        WebController c = new WebController(model);
+        String sam = codeIn(c.join("Sam", "30"));
+        assertEquals("Reprint not allowed: that code is still waiting in line.", c.reprint(sam));
+        c.next();
+        for (int i = 0; i < LayerLineModel.MAX_WAITING; i++) {
+            c.join("P" + i, "10");
+        }
+        assertTrue(c.reprint(sam).startsWith("Reprint not allowed: the line is full"));
+        assertTrue(c.reprint("ZZZZZZ").startsWith("Reprint not allowed: code not found."));
+    }
 }

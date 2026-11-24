@@ -253,4 +253,16 @@ class LayerLineControllerTest {
         assertDoesNotThrow(() -> run(model, "reprint"));
         assertTrue(model.getStatus().isEmpty());
     }
+
+    @Test
+    void reprintRefusalSaysWhy() {
+        LayerLineModel model = new LayerLineModel();
+        String out = run(model, "join", "Sam", "30", "quit");
+        String sam = codesIn(out).get(0);
+        out = run(model, "reprint", sam, "reprint", "ZZZZZZ", "next", "join", "sam", "10", "reprint", sam, "quit");
+        assertTrue(out.contains("Reprint not allowed: that code is still waiting in line."));
+        assertTrue(out.contains("Reprint not allowed: code not found."));
+        assertTrue(out.contains("Reprint not allowed: someone with that name is already waiting."));
+        assertEquals("1:sam", names(model));
+    }
 }

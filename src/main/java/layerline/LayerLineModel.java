@@ -12,6 +12,8 @@ public class LayerLineModel {
     static final int MAX_MINUTES = 240;
     static final int MAX_NAME_LENGTH = 20;
     static final int CODE_LENGTH = 6;
+    /** Only this many of the most recently called students can still reprint. */
+    static final int REPRINT_WINDOW = 10;
 
     private final LinkedQueue<PrintRequest> line;
     /** Called with next and still allowed one reprint. */
@@ -71,35 +73,43 @@ public class LayerLineModel {
         }
         if (reprinted.removeFirst(head) == null) {
             served.enqueue(head); // first time called: one reprint allowed
+            if (served.size() > REPRINT_WINDOW) {
+                served.dequeue(); // oldest call is too long ago to reprint
+            }
         }
         return new StatusEntry(1, head.getDisplayName(), head.getMinutes());
     }
 
     /**
      * Puts a student who was already called back at place 1, once per code.
+     * Checks run in this order: code known, still waiting, line full, same name waiting.
      *
-     * @return true if they are now first; false for a blank or unknown code, a
-     *         code still waiting or already reprinted, a full line, or a name
-     *         that is already waiting
+     * @return ACCEPTED if they are now first; otherwise the first rule that failed
      * @throws IllegalArgumentException if code is null
      */
-    public boolean reprint(String personalCode) {
+    public ReprintOutcome reprint(String personalCode) {
         if (personalCode == null) {
             throw new IllegalArgumentException("Code must not be null.");
         }
         String code = personalCode.trim().toUpperCase();
         if (code.isEmpty()) {
-            return false;
+            return ReprintOutcome.NOT_FOUND;
         }
         PrintRequest request = findByCode(served, code);
-        if (request == null || line.size() >= MAX_WAITING
-                || findByName(request.getNormalizedName()) != null) {
-            return false;
+        if (request == null) {
+            return findByCode(line, code) != null
+                    ? ReprintOutcome.STILL_WAITING : ReprintOutcome.NOT_FOUND;
+        }
+        if (line.size() >= MAX_WAITING) {
+            return ReprintOutcome.LINE_FULL;
+        }
+        if (findByName(request.getNormalizedName()) != null) {
+            return ReprintOutcome.NAME_WAITING;
         }
         served.removeFirst(request);
         reprinted.enqueue(request);
         line.enqueueFront(request);
-        return true;
+        return ReprintOutcome.ACCEPTED;
     }
 
     /**
