@@ -1,30 +1,42 @@
 # Layer Line (Group 88, Project 3)
 
-Console MVC app for a 3D-print queue, plus a small web view. Deliverable 4 adds
-the change feature **Reprint at the front**.
+Console MVC app for a 3D-print queue, plus a small web view. Deliverable 4 added
+the change feature **Reprint at the front**. Deliverable 5 is the final build:
+reprint now says *why* it was refused, all user-facing text lives in one class, and
+only recently called students can reprint.
 
 ```
 src/main/java/layerline/
-  MODEL       LinkedQueue, PrintRequest, LayerLineModel, JoinResult, StatusEntry, JoinOutcome
+  MODEL       LinkedQueue, PrintRequest, LayerLineModel, JoinResult, JoinOutcome,
+              StatusEntry, ReprintOutcome
   VIEW        ConsoleView, LayerLineWebApp
-  CONTROLLER  LayerLineController, WebController, LayerLineApp
+  CONTROLLER  LayerLineController, WebController, Messages, LayerLineApp
 src/test/java/layerline/   JUnit 5 tests: model (no view) + view and controller
 ```
 
 ### Run the tests
 
-74 tests, all passing:
+78 tests, all passing:
 
-- **Model, no view (47):** `LinkedQueueTest` (21) and `LayerLineModelTest` (26).
+- **Model, no view (49):** `LinkedQueueTest` (21) and `LayerLineModelTest` (28).
   They build `LinkedQueue` and `LayerLineModel` directly and never create a
-  `Scanner`, view, controller, or web server.
-- **View and controller (27):** `LayerLineControllerTest` (16), `ConsoleViewTest` (6),
-  `WebControllerTest` (5).
+  `Scanner`, view, controller, or web server. 10 of the `LayerLineModelTest` tests
+  cover the change feature (`reprint`, its outcomes, and the reprint window).
+- **View and controller (29):** `LayerLineControllerTest` (17), `ConsoleViewTest` (6),
+  `WebControllerTest` (6).
 
-How to run them:
+How to run them (Java 17 or newer):
 
 - With Maven: `mvn test`
 - In Eclipse: right-click `src/test/java` > Run As > JUnit Test
+- Without Maven: download `junit-platform-console-standalone-1.10.2.jar` from Maven
+  Central into `lib/`, then:
+
+```
+mkdir -p out/test
+javac -d out/test -cp lib/junit-platform-console-standalone-1.10.2.jar src/main/java/layerline/*.java src/test/java/layerline/*.java
+java -jar lib/junit-platform-console-standalone-1.10.2.jar execute -cp out/test --scan-classpath
+```
 
 ### Compile and run the console app
 
@@ -40,7 +52,22 @@ through `LayerLineController`; `ConsoleView` never touches the model.
 - `next`: calls the first student in line.
 - `cancel`: personal code; removes you from the line.
 - `reprint`: personal code; if your print failed after you were called, you go back
-  to place 1, once per code.
+  to place 1, once per code, as long as you were one of the last 10 students called.
+  A refusal names the rule that failed: code not found (or reprint already used),
+  code still waiting in line, line full, or same name already waiting.
+
+### Bad input the program handles without crashing
+
+| Input | What happens |
+|---|---|
+| Minutes `abc`, `1.5`, blank, `0`, `241`, `99999999999` | "Enter a whole number from 1 to 240." and re-prompt |
+| Blank name, name over 20 characters, control characters | Message, then only the name is asked again |
+| Same name in different case | "Already waiting at place N." No second code |
+| 41st student | "Line full (40 maximum)." |
+| Wrong, blank or lowercase code for `cancel` / `reprint` | Codes are trimmed and uppercased; unknown codes get a message |
+| Unknown or mixed-case command | Unknown command lists the valid ones; `JOIN` works |
+| End of input (Ctrl+D) at any prompt | Program exits cleanly |
+| Web form with missing fields | Same messages as the console, through `WebController` |
 
 ## Web interface
 
@@ -69,7 +96,74 @@ change the host side of `ports` in `compose.yaml` to use another port. No revers
 proxy is included. Stop with `docker compose down`. Queue data is held in memory
 and is lost when the application restarts. The Docker build runs all JUnit tests.
 
-## Reflection
+## Deliverable 5: Final build
+
+### System diagram
+
+```
+             VIEW                         CONTROLLER                        MODEL
+ +-------------------+   typed text   +---------------------+   calls   +------------------------+
+ | ConsoleView       | -------------> | LayerLineController | --------> | LayerLineModel         |
+ |  prompt, show     | <------------- |                     | <-------- |  join / callNext /     |
+ +-------------------+    messages    +---------------------+  results  |  cancel / reprint /    |
+                                              |   Messages   |           |  getStatus             |
+ +-------------------+   form fields  +---------------------+           |                        |
+ | LayerLineWebApp   | -------------> | WebController       | --------> |  line     LinkedQueue  |
+ |  HTTP, HTML       | <------------- |                     | <-------- |  served   LinkedQueue  |
+ +-------------------+    messages    +---------------------+           |  reprinted LinkedQueue |
+                                                                         +------------------------+
+ Results crossing the line: JoinResult + JoinOutcome, ReprintOutcome, StatusEntry (never a code)
+```
+
+### What changed from our D4 plan
+
+| D4 Next Steps item | What we built | Why it differs (if it does) |
+|---|---|---|
+| 1. `ReprintOutcome` + `ReprintResult` | `reprint(String)` returns a `ReprintOutcome` enum directly: `ACCEPTED`, `NOT_FOUND`, `STILL_WAITING`, `LINE_FULL`, `NAME_WAITING` | A `ReprintResult` would only have wrapped the enum. `JoinResult` exists because a join also returns a place and a code; a reprint always lands at place 1 and never makes a new code |
+| 2. Use it in `handleReprint` | Done; the console prints the specific reason | |
+| 3. Use it in `WebController` | Done; the web page prints the same reason | |
+| 4. One shared message class | `Messages` (controller layer): join, called, cancel, empty line, bad minutes and all reprint text | Console and web text used to differ by punctuation ("Line is empty" vs "Line is empty."). Both now match |
+| 5. Trim served entries | `served` keeps at most `REPRINT_WINDOW` (10) students; the oldest drops off on each new call | Bounded memory, and a reprint for a print called 10 students ago no longer makes sense |
+| 6. Update spec and UML | The diagram above | |
+| 7. Rehearse the demo | See the demo plan below | |
+
+`ConsoleView`, `LayerLineWebApp`, `PrintRequest`, `LinkedQueue`, `JoinResult`,
+`JoinOutcome`, `StatusEntry` and `LayerLineApp` did not change in D5.
+
+### Stretch goals
+
+| Stretch goal | Status |
+|---|---|
+| Reprint at the front | **Built** (D4 change feature, finished in D5) |
+| GUI board | **Built**: the web view through `WebController`, plus Docker Compose |
+| Separate PLA and resin lines | Not built |
+| Save and load | Not built |
+
+### Checklist
+
+| Item | Where |
+|---|---|
+| Compiles and runs | "Compile and run the console app", "Web interface" |
+| MVP works | `join`, `status`, `next`, `cancel` on console and web |
+| Change feature works | `reprint` on console and web |
+| Clean model/view separation | `ConsoleView` holds only a `Scanner`; `LayerLineWebApp` holds only a `WebController`; no view calls a `LayerLineModel` method (the web app only constructs the model to hand it to `WebController`) |
+| Queue implemented and used | `LinkedQueue<T>` (our own singly linked queue) holds `line`, `served` and `reprinted` |
+| Bad input handled | Table above; covered by `LayerLineControllerTest` and `WebControllerTest` |
+| JUnit tests run | 78 tests, see "Run the tests" |
+
+### 3-minute lightning demo
+
+| Time | What we show | Who |
+|---|---|---|
+| 0:00 to 0:20 | Start `LayerLineApp`; the command list | Ajeet types, Brian talks |
+| 0:20 to 0:50 | `join` Sam (30), Lee (45); code shown once; `status` shows no codes | Ajeet, Brian |
+| 0:50 to 1:10 | Bad input: minutes `abc` and `241` re-prompt; blank name re-prompts only the name | Ajeet, Brian |
+| 1:10 to 1:50 | **Change feature:** `reprint` Sam before being called ("still waiting"); `next`; `reprint` in lowercase puts Sam at place 1; second `reprint` refused | Ajeet, Brian |
+| 1:50 to 2:05 | `cancel` Lee with Lee's code; `status` | Ajeet |
+| 2:05 to 2:30 | Web page: same reprint form and same messages, through `WebController` | Karthik |
+| 2:30 to 3:00 | Test run: 78 passing, 49 on the model with no view | Karthik |
+
+## Deliverable 4 reflection
 
 ### How did our design absorb the change?
 
@@ -166,7 +260,7 @@ text is also written twice, once in `LayerLineController` and once in
 With both in place, a feature like separate PLA and resin lines would add model
 logic and one set of messages, not two.
 
-## Next Steps
+## Deliverable 4 next steps
 
 ### 1. What is left for the final build (in order)
 
