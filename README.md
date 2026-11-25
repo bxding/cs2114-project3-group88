@@ -310,21 +310,23 @@ Console app, one person typing, one person talking.
 |---|---|---|
 | `LinkedQueue.java` | Model | Brian wrote it. Karthik integrated it. Ajeet reviewed the `removeFirst` pointer cases. D4: Brian wrote `enqueueFront` with GenAI help (Claude helped write it from our D3 prediction). |
 | `PrintRequest.java` | Model | Brian wrote it. Karthik reviewed it. Unchanged in D4. |
-| `LayerLineModel.java` | Model | Brian wrote it, including `makeCode` and name cleaning. Ajeet reviewed the validation against spec section 6. D4: Brian wrote `reprint` and the `served` and `reprinted` queues. The `callNext`/`cancel`/`makeCode` changes and the `findByCode`/`findByName` helpers were GenAI-assisted (Claude implemented them); Brian reviewed and owns them. |
+| `LayerLineModel.java` | Model | Brian wrote it, including `makeCode` and name cleaning. Ajeet reviewed the validation against spec section 6. D4: Brian wrote `reprint` and the `served` and `reprinted` queues. The `callNext`/`cancel`/`makeCode` changes and the `findByCode`/`findByName` helpers were GenAI-assisted (Claude implemented them); Brian reviewed and owns them. D5: Brian changed `reprint` to return `ReprintOutcome` and capped `served` at `REPRINT_WINDOW` (10). |
 | `JoinResult.java` | Model | Brian wrote it. Ajeet reviewed it. Unchanged in D4. |
 | `StatusEntry.java` | Model | Brian wrote it. Karthik reviewed it (no code field reaches the view). Unchanged in D4. |
 | `JoinOutcome.java` | Model | Brian wrote it. Unchanged in D4. |
+| `ReprintOutcome.java` | Model | New in D5. Brian wrote it: `ACCEPTED`, `NOT_FOUND`, `STILL_WAITING`, `LINE_FULL`, `NAME_WAITING`. |
 | `ConsoleView.java` | View | Karthik wrote it and ran the manual display checks. Ajeet reviewed it. Unchanged in D4. |
 | `LayerLineWebApp.java` | View | Brian wrote it, plus the `Dockerfile` and `compose.yaml`. D4: Brian and Karthik split it into view + `WebController` and added the reprint form. |
-| `LayerLineController.java` | Controller | Ajeet wrote it, including `readMinutes` and the command handlers. Karthik revised and integrated it. D4: Ajeet wrote `handleReprint` and the `reprint` case. |
-| `WebController.java` | Controller | New in D4. Karthik wrote it by moving the web app's logic out of `LayerLineWebApp`. |
+| `LayerLineController.java` | Controller | Ajeet wrote it, including `readMinutes` and the command handlers. Karthik revised and integrated it. D4: Ajeet wrote `handleReprint` and the `reprint` case. D5: Ajeet made `handleReprint` print the reason from `ReprintOutcome`, using the shared `Messages` text. |
+| `WebController.java` | Controller | New in D4. Karthik wrote it by moving the web app's logic out of `LayerLineWebApp`. D5: Karthik made `reprint` use `ReprintOutcome` and `Messages`. |
 | `LayerLineApp.java` | Controller | Ajeet wrote it. Karthik integrated it. Unchanged in D4. |
+| `Messages.java` | Controller | New in D5. Karthik wrote it by moving every user-facing sentence out of both controllers. |
 | `LinkedQueueTest.java` | Test | Brian wrote it. Karthik reviewed it against spec 7.1. D4: Brian wrote the 3 `enqueueFront` tests and the 2 interleaved order tests; Claude refined the interleaved order tests. |
-| `LayerLineModelTest.java` | Test | Brian and Karthik wrote it. Ajeet reviewed it against spec 7.2 and 7.3. D4: Brian wrote the 8 reprint tests; Claude refined them. |
-| `LayerLineControllerTest.java` | Test | GenAI-assisted: Claude wrote the first version from spec 7.4; Ajeet checked each scenario against the spec and ran it. D4: Ajeet wrote the 3 reprint tests. |
+| `LayerLineModelTest.java` | Test | Brian and Karthik wrote it. Ajeet reviewed it against spec 7.2 and 7.3. D4: Brian wrote the 8 reprint tests; Claude refined them. D5: Brian updated the reprint tests for each outcome and added the reprint-window tests. |
+| `LayerLineControllerTest.java` | Test | GenAI-assisted: Claude wrote the first version from spec 7.4; Ajeet checked each scenario against the spec and ran it. D4: Ajeet wrote the 3 reprint tests. D5: Ajeet added the refusal-reason tests. |
 | `ConsoleViewTest.java` | Test | New in D4. Karthik wrote it from spec section 8. |
-| `WebControllerTest.java` | Test | New in D4. Karthik wrote it. |
-| `README.md` | Docs | Karthik wrote the run instructions. Brian added the web and Docker sections. Ajeet added the Next Steps and Attribution. D3 Reflection along with ReadMe structuring were GenAI-assisted (Claude drafted them); Ajeet edited them and the team reviewed them. The team wrote the D4 run instructions, Reflection, Next Steps and Attribution. |
+| `WebControllerTest.java` | Test | New in D4. Karthik wrote it. D5: Karthik added the refusal-reason tests. |
+| `README.md` | Docs | Karthik wrote the run instructions. Brian added the web and Docker sections. Ajeet added the Next Steps and Attribution. D3 Reflection along with ReadMe structuring were GenAI-assisted (Claude drafted them); Ajeet edited them and the team reviewed them. The team wrote the D4 run instructions, Reflection, Next Steps and Attribution. D5: Ajeet wrote the Deliverable 5 section. |
 
 ### GenAI note
 
@@ -348,5 +350,10 @@ Tools: ChatGPT and Claude. The team checked everything below before keeping it. 
 - **`LinkedQueue.enqueueFront`:** Claude helped us write it from our D3 prediction (O(1), sets `tail` when the queue was empty, rejects `null`).
 - **`LayerLineModel` reprint feature:** we wrote `reprint(String)` and the `served` and `reprinted` queues. Claude implemented the change to `callNext()` that records who was called, the change to `cancel()` that clears the reprint marker, the change to `makeCode()` so codes stay unique against students who can still reprint, and the `findByCode` / `findByName` helpers. Brian reviewed each change against our D3 rules.
 - **Tests:** Claude refined the interleaved enqueue/dequeue order tests in `LinkedQueueTest` and the 8 reprint tests in `LayerLineModelTest`. We wrote the first versions and checked each refined assertion before keeping it.
+
+**Deliverable 5 (final build)**
+- **No GenAI in the D5 code.** The team wrote `ReprintOutcome`, `Messages`, the reprint window, the 4 new tests, and the Deliverable 5 README section.
+- **Ajeet's writeup (Claude):** Ajeet wrote the first draft. Claude checked it against our scope, spec and code, corrected one wrong claim (the spec used `java.util.Random`, not `SecureRandom`), added the GenAI-across-projects section from our GenAI notes and Ajeet's answers, and trimmed it to one page. Ajeet reviewed every change.
+- **Slide deck (Claude):** Claude built the deck from this README, our spec, scope and code, then revised it after checking each slide's layout. The team reviews and edits it before presenting.
 
 **Not GenAI:** the Deliverable 2 and 3 main Java code (`LinkedQueue`, `LayerLineModel`, `PrintRequest`, `JoinResult`, `StatusEntry`, `JoinOutcome`, `ConsoleView`, `LayerLineController`, `LayerLineApp`, `LayerLineWebApp`), the Deliverable 3 versions of `LinkedQueueTest` and `LayerLineModelTest`, the Maven build, and the Docker files. In Deliverable 4 we wrote everything not listed above ourselves: the reprint case and `handleReprint()` in `LayerLineController`, `WebController` and the `LayerLineWebApp` split and reprint form, the 3 `enqueueFront` tests, the 3 reprint tests in `LayerLineControllerTest`, `ConsoleViewTest`, `WebControllerTest`, and the Deliverable 4 README sections.
