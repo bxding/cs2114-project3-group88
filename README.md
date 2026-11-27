@@ -353,7 +353,7 @@ Tools: ChatGPT and Claude. The team checked everything below before keeping it. 
 
 **Deliverable 5 (final build)**
 - **No GenAI in the D5 code.** The team wrote `ReprintOutcome`, `Messages`, the reprint window, the 4 new tests, and the Deliverable 5 README section.
-- **Ajeet's writeup:** Ajeet wrote the first draft, added the GenAI-across-projects section from our GenAI notes. Claude checked it against our scope, spec and code, corrected one wrong claim (the spec used `java.util.Random`, not `SecureRandom`), and trimmed it to one page. Ajeet reviewed every change.
-- **Slide deck :** Ajeet, Brian, and Karthik built the deck from this README, our spec, scope and code, then Claude revised it after checking each slide's layout. The team reviewed and edits it before presenting.
+- **Ajeet's writeup:** Ajeet wrote the first draft, added the GenAI-across-projects section from our GenAI notes. Claude corrected one wrong claim (the spec used `java.util.Random`, not `SecureRandom`), and trimmed it to one page. Ajeet reviewed every change.
+- **Slide deck :** Ajeet, Brian, and Karthik built the deck from this README, our spec, scope and code. Team reviewed the slide deck before the oral defense.
 
 **Not GenAI:** the Deliverable 2 and 3 main Java code (`LinkedQueue`, `LayerLineModel`, `PrintRequest`, `JoinResult`, `StatusEntry`, `JoinOutcome`, `ConsoleView`, `LayerLineController`, `LayerLineApp`, `LayerLineWebApp`), the Deliverable 3 versions of `LinkedQueueTest` and `LayerLineModelTest`, the Maven build, and the Docker files. In Deliverable 4 we wrote everything not listed above ourselves: the reprint case and `handleReprint()` in `LayerLineController`, `WebController` and the `LayerLineWebApp` split and reprint form, the 3 `enqueueFront` tests, the 3 reprint tests in `LayerLineControllerTest`, `ConsoleViewTest`, `WebControllerTest`, and the Deliverable 4 README sections.
